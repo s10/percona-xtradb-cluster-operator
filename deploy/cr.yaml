@@ -22,6 +22,9 @@ spec:
 #  logCollectorSecretName: cluster1-log-collector-secrets
 #  initContainer:
 #    image: perconalab/percona-xtradb-cluster-operator:main
+#    containerSecurityContext:
+#      runAsUser: 1001
+#      runAsGroup: 1001
 #    resources:
 #      requests:
 #        memory: 100M
@@ -115,6 +118,10 @@ spec:
 #      periodSeconds: 10
 #      successThreshold: 1
 #      failureThreshold: 3
+#    initContainer:
+#      containerSecurityContext:
+#        runAsUser: 1001
+#        runAsGroup: 1001
 #    containerSecurityContext:
 #      privileged: false
 #    podSecurityContext:
@@ -331,6 +338,10 @@ spec:
 #      limits:
 #        memory: 2G
 #        cpu: 600m
+#    initContainer:
+#      containerSecurityContext:
+#        runAsUser: 1001
+#        runAsGroup: 1001
 #    containerSecurityContext:
 #      privileged: false
 #    podSecurityContext:
@@ -481,6 +492,10 @@ spec:
 #      limits:
 #        memory: 2G
 #        cpu: 600m
+#    initContainer:
+#      containerSecurityContext:
+#        runAsUser: 1001
+#        runAsGroup: 1001
 #    containerSecurityContext:
 #      privileged: false
 #    podSecurityContext:

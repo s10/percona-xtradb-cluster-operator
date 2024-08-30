@@ -65,8 +65,9 @@ type UnsafeFlags struct {
 }
 
 type InitContainerSpec struct {
-	Image     string                       `json:"image,omitempty"`
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Image                    string                       `json:"image,omitempty"`
+	Resources                *corev1.ResourceRequirements `json:"resources,omitempty"`
+	ContainerSecurityContext *corev1.SecurityContext      `json:"containerSecurityContext,omitempty"`
 }
 
 type PXCSpec struct {
@@ -473,6 +474,7 @@ type PodSpec struct {
 	ContainerSecurityContext     *corev1.SecurityContext           `json:"containerSecurityContext,omitempty"`
 	ServiceAccountName           string                            `json:"serviceAccountName,omitempty"`
 	ImagePullPolicy              corev1.PullPolicy                 `json:"imagePullPolicy,omitempty"`
+	InitContainer                *InitContainerSpec                `json:"initContainer,omitempty"`
 	Sidecars                     []corev1.Container                `json:"sidecars,omitempty"`
 	SidecarVolumes               []corev1.Volume                   `json:"sidecarVolumes,omitempty"`
 	SidecarPVCs                  []corev1.PersistentVolumeClaim    `json:"sidecarPVCs,omitempty"`
@@ -753,7 +755,7 @@ const clusterNameMaxLen = 22
 
 var defaultPXCGracePeriodSec int64 = 600
 
-func (cr *PerconaXtraDBCluster) setSecurityContext() {
+func (cr *PerconaXtraDBCluster) setPodSecurityContext() {
 	var fsgroup *int64
 	if cr.Spec.Platform != version.PlatformOpenshift {
 		var tp int64 = 1001
@@ -776,6 +778,30 @@ func (cr *PerconaXtraDBCluster) setSecurityContext() {
 				cr.Spec.Backup.Storages[k].PodSecurityContext = sc
 			}
 		}
+	}
+}
+
+func (cr *PerconaXtraDBCluster) setContainerSecurityContext() {
+	if cr.CompareVersionWith("1.16.0") >= 0 {
+		if cr.Spec.InitContainer.ContainerSecurityContext == nil {
+			cr.Spec.InitContainer.ContainerSecurityContext = cr.Spec.PXC.ContainerSecurityContext
+		}
+
+		if cr.Spec.PXC.InitContainer == nil {
+			cr.Spec.PXC.InitContainer = &cr.Spec.InitContainer
+		}
+
+		if cr.HAProxyEnabled() {
+			if cr.Spec.HAProxy.InitContainer == nil {
+				cr.Spec.HAProxy.InitContainer = &cr.Spec.InitContainer
+			}
+		}
+		if cr.ProxySQLEnabled() {
+			if cr.Spec.ProxySQL.InitContainer == nil {
+				cr.Spec.ProxySQL.InitContainer = &cr.Spec.InitContainer
+			}
+		}
+
 	}
 }
 
@@ -1066,7 +1092,8 @@ func (cr *PerconaXtraDBCluster) CheckNSetDefaults(serverVersion *version.ServerV
 	}
 
 	cr.setProbesDefaults()
-	cr.setSecurityContext()
+	cr.setPodSecurityContext()
+	cr.setContainerSecurityContext()
 
 	if cr.Spec.EnableCRValidationWebhook == nil {
 		falseVal := false
