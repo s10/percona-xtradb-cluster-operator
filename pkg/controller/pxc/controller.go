@@ -560,7 +560,13 @@ func (r *ReconcilePerconaXtraDBCluster) deploy(ctx context.Context, cr *api.Perc
 	if client.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "get internal secret")
 	}
-	nodeSet, err := pxc.StatefulSet(ctx, r.client, stsApp, cr.Spec.PXC.PodSpec, cr, secrets, initImageName, r.getConfigVolume)
+	nodeInitImageName := initImageName
+	if cr.CompareVersionWith("1.16.0") >= 0 {
+		if cr.Spec.PXC.InitContainer != nil && len(cr.Spec.PXC.InitContainer.Image) > 0 {
+			nodeInitImageName = cr.Spec.PXC.InitContainer.Image
+		}
+	}
+	nodeSet, err := pxc.StatefulSet(ctx, r.client, stsApp, cr.Spec.PXC.PodSpec, cr, secrets, nodeInitImageName, r.getConfigVolume)
 	if err != nil {
 		return errors.Wrap(err, "get pxc statefulset")
 	}
@@ -651,8 +657,14 @@ func (r *ReconcilePerconaXtraDBCluster) deploy(ctx context.Context, cr *api.Perc
 
 	// HAProxy StatefulSet
 	if cr.HAProxyEnabled() {
+		haProxyInitImageName := initImageName
+		if cr.CompareVersionWith("1.16.0") >= 0 {
+			if cr.Spec.HAProxy.InitContainer != nil && len(cr.Spec.HAProxy.InitContainer.Image) > 0 {
+				haProxyInitImageName = cr.Spec.HAProxy.InitContainer.Image
+			}
+		}
 		sfsHAProxy := statefulset.NewHAProxy(cr)
-		haProxySet, err := pxc.StatefulSet(ctx, r.client, sfsHAProxy, &cr.Spec.HAProxy.PodSpec, cr, secrets, initImageName, r.getConfigVolume)
+		haProxySet, err := pxc.StatefulSet(ctx, r.client, sfsHAProxy, &cr.Spec.HAProxy.PodSpec, cr, secrets, haProxyInitImageName, r.getConfigVolume)
 		if err != nil {
 			return errors.Wrap(err, "create HAProxy StatefulSet")
 		}
@@ -705,8 +717,14 @@ func (r *ReconcilePerconaXtraDBCluster) deploy(ctx context.Context, cr *api.Perc
 	}
 
 	if cr.Spec.ProxySQLEnabled() {
+		proxySQLInitImageName := initImageName
+		if cr.CompareVersionWith("1.16.0") >= 0 {
+			if cr.Spec.ProxySQL.InitContainer != nil && len(cr.Spec.ProxySQL.InitContainer.Image) > 0 {
+				proxySQLInitImageName = cr.Spec.ProxySQL.InitContainer.Image
+			}
+		}
 		sfsProxy := statefulset.NewProxy(cr)
-		proxySet, err := pxc.StatefulSet(ctx, r.client, sfsProxy, &cr.Spec.ProxySQL.PodSpec, cr, secrets, initImageName, r.getConfigVolume)
+		proxySet, err := pxc.StatefulSet(ctx, r.client, sfsProxy, &cr.Spec.ProxySQL.PodSpec, cr, secrets, proxySQLInitImageName, r.getConfigVolume)
 		if err != nil {
 			return errors.Wrap(err, "create ProxySQL Service")
 		}

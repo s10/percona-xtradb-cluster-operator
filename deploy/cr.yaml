@@ -119,6 +119,7 @@ spec:
 #      successThreshold: 1
 #      failureThreshold: 3
 #    initContainer:
+#      image: perconalab/percona-xtradb-cluster-operator:main
 #      containerSecurityContext:
 #        runAsUser: 1001
 #        runAsGroup: 1001
@@ -339,6 +340,7 @@ spec:
 #        memory: 2G
 #        cpu: 600m
 #    initContainer:
+#      image: perconalab/percona-xtradb-cluster-operator:main
 #      containerSecurityContext:
 #        runAsUser: 1001
 #        runAsGroup: 1001
@@ -493,6 +495,7 @@ spec:
 #        memory: 2G
 #        cpu: 600m
 #    initContainer:
+#      image: perconalab/percona-xtradb-cluster-operator:main
 #      containerSecurityContext:
 #        runAsUser: 1001
 #        runAsGroup: 1001
