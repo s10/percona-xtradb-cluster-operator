@@ -73,6 +73,7 @@ type PXCSpec struct {
 	AutoRecovery        *bool                `json:"autoRecovery,omitempty"`
 	ReplicationChannels []ReplicationChannel `json:"replicationChannels,omitempty"`
 	Expose              ServiceExpose        `json:"expose,omitempty"`
+	FixVolumeOwner      *bool                `json:"fixVolumeOwner,omitempty"`
 	*PodSpec            `json:",inline"`
 }
 
@@ -289,6 +290,10 @@ func (cr *PerconaXtraDBCluster) Validate() error {
 	if c.PXC.AutoRecovery == nil {
 		boolVar := true
 		c.PXC.AutoRecovery = &boolVar
+	}
+	if c.PXC.FixVolumeOwner == nil {
+		boolVar := false
+		c.PXC.FixVolumeOwner = &boolVar
 	}
 
 	if c.PXC.Image == "" {

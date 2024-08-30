@@ -7678,6 +7678,8 @@ spec:
                     type: object
                   externalTrafficPolicy:
                     type: string
+                  fixVolumeOwner:
+                    type: boolean
                   forceUnsafeBootstrap:
                     type: boolean
                   gracePeriod:

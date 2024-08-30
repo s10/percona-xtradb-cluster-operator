@@ -60,9 +60,20 @@ func (c *Node) Name() string {
 }
 
 func (c *Node) InitContainers(cr *api.PerconaXtraDBCluster, initImageName string) []corev1.Container {
+	inits := nodeInitContainers(cr, initImageName)
+
+	if *cr.Spec.PXC.FixVolumeOwner {
+		inits = append([]corev1.Container{PermissionsInitContainer(cr, initImageName, app.DataVolumeName)}, inits...)
+	}
+
+	return inits
+}
+
+func nodeInitContainers(cr *api.PerconaXtraDBCluster, initImageName string) []corev1.Container {
 	inits := []corev1.Container{
 		EntrypointInitContainer(cr, initImageName, app.DataVolumeName),
 	}
+
 	return inits
 }
 

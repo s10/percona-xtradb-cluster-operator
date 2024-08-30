@@ -537,6 +537,11 @@ func (in *PXCSpec) DeepCopyInto(out *PXCSpec) {
 		}
 	}
 	in.Expose.DeepCopyInto(&out.Expose)
+	if in.FixVolumeOwner != nil {
+		in, out := &in.FixVolumeOwner, &out.FixVolumeOwner
+		*out = new(bool)
+		**out = **in
+	}
 	if in.PodSpec != nil {
 		in, out := &in.PodSpec, &out.PodSpec
 		*out = new(PodSpec)
