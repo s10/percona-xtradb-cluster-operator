@@ -203,6 +203,10 @@ spec:
       initContainers:
         - command:
             - /pxc-init-entrypoint.sh
+          envFrom:
+            - secretRef:
+                name: cluster1-env-vars-pxc
+                optional: true
           imagePullPolicy: Always
           name: pxc-init
           resources:

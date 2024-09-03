@@ -136,6 +136,10 @@ spec:
       initContainers:
         - command:
             - /pxc-init-entrypoint.sh
+          envFrom:
+            - secretRef:
+                name: proxy-protocol-haproxy-env-vars-pxc
+                optional: true
           imagePullPolicy: Always
           name: pxc-init
           resources:
