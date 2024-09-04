@@ -8,6 +8,7 @@ import (
 )
 
 func EntrypointInitContainer(cr *api.PerconaXtraDBCluster, initImageName string, volumeName string) corev1.Container {
+	tvar := true
 	initResources := cr.Spec.PXC.Resources
 	if cr.Spec.InitContainer.Resources != nil {
 		initResources = *cr.Spec.InitContainer.Resources
@@ -25,6 +26,16 @@ func EntrypointInitContainer(cr *api.PerconaXtraDBCluster, initImageName string,
 		Command:         []string{"/pxc-init-entrypoint.sh"},
 		SecurityContext: cr.Spec.PXC.ContainerSecurityContext,
 		Resources:       initResources,
+		EnvFrom: []corev1.EnvFromSource{
+			{
+				SecretRef: &corev1.SecretEnvSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: cr.Spec.PXC.EnvVarsSecretName,
+					},
+					Optional: &tvar,
+				},
+			},
+		},
 	}
 }
 
