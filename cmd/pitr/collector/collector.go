@@ -613,8 +613,9 @@ func (c *Collector) cleanupOldBinlogs(ctx context.Context, retentionDays int) er
 	cutoffTime := time.Now().AddDate(0, 0, -retentionDays)
 
 	objects, err := c.storage.ListObjects(ctx, "binlog_")
+	log.Printf("Found %d objects in storage %s with prefix %s", len(objects), c.storage.GetPrefix(), "binlog_")
 	if err != nil {
-		return errors.Wrap(err, "list objects in storage")
+		return errors.Wrapf(err, "list objects in storage %s", c.storage.GetPrefix())
 	}
 
 	for _, obj := range objects {
