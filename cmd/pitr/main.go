@@ -26,10 +26,20 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
 
+	srv := &http.Server{Addr: ":8080"}
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
 		http.HandleFunc("/health", healthHandler)
-		log.Fatal(http.ListenAndServe(":8080", nil))
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Printf("ERROR: HTTP server error: %v", err)
+		}
+	}()
+
+	go func() {
+		<-ctx.Done()
+		if err := srv.Shutdown(context.Background()); err != nil {
+			log.Printf("ERROR: HTTP server shutdown: %v", err)
+		}
 	}()
 
 	switch command {
@@ -43,7 +53,7 @@ func main() {
 	}
 }
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
+func healthHandler(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write([]byte("ok")); err != nil {
 		log.Println("ERROR: writing health response:", err)
